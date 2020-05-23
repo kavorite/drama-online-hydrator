@@ -12,13 +12,15 @@ from tqdm import tqdm
 @dataclass
 class Play(object):
     title: str
+    author: str
     themes: set
-    period: set
+    periods: set
+    places: set
     genres: set
 
     @classmethod
     def empty(cls):
-        return cls('', {}, {}, {})
+        return cls('', '', {}, {}, {}, {})
 
     @staticmethod
     def header():
@@ -37,10 +39,8 @@ class Play(object):
         async with http.get(uri) as rsp:
             dom = DOM(await rsp.text(), 'lxml')
         tags = iter(dom.select('div.play-related-lists ul li'))
-        try:
-            self.author = dom.select('span.authorRole a')[0].text
-        except IndexError:
-            self.author = ''
+        self.author = ', '.join(a.text
+                                for a in dom.select('span.authorRole a'))
         target_keys = {k: i for i, k in
                        enumerate(('theme', 'period', 'place', 'genre'))}
         targets = [set(()) for i in range(len(target_keys))]
