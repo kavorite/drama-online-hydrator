@@ -12,7 +12,7 @@ from tqdm import tqdm
 @dataclass
 class Play(object):
     title: str
-    author: str
+    author: set
     themes: set
     periods: set
     places: set
@@ -20,15 +20,16 @@ class Play(object):
 
     @classmethod
     def empty(cls):
-        return cls('', '', {}, {}, {}, {})
+        return cls('', {}, {}, {}, {}, {})
 
     @staticmethod
     def header():
-        return ['title', 'author', 'themes', 'periods', 'places', 'genres']
+        return ['title', 'author(s)', 'theme(s)',
+                'period(s)', 'place(s)', 'genre(s)']
 
     def record(self):
         return (self.title,
-                self.author,
+                ', '.join(self.authors),
                 ', '.join(self.themes),
                 ', '.join(self.period),
                 ', '.join(self.places),
@@ -38,8 +39,7 @@ class Play(object):
         self.title = title
         async with http.get(uri) as rsp:
             dom = DOM(await rsp.text(), 'lxml')
-        self.author = ', '.join(set(
-            a.text for a in dom.select('span.authorRole a')))
+        self.authors = set(a.text for a in dom.select('span.authorRole a'))
         tags = iter(dom.select('div.play-related-lists ul li'))
         target_keys = {k: i for i, k in
                        enumerate(('theme', 'period', 'place', 'genre'))}
