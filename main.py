@@ -38,9 +38,9 @@ class Play(object):
         self.title = title
         async with http.get(uri) as rsp:
             dom = DOM(await rsp.text(), 'lxml')
+        self.author = ', '.join(set(
+            a.text for a in dom.select('span.authorRole a')))
         tags = iter(dom.select('div.play-related-lists ul li'))
-        self.author = ', '.join(a.text
-                                for a in dom.select('span.authorRole a'))
         target_keys = {k: i for i, k in
                        enumerate(('theme', 'period', 'place', 'genre'))}
         targets = [set(()) for i in range(len(target_keys))]
